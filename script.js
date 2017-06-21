@@ -7,6 +7,7 @@ var totalPaymentsInput = $('input[name=total-payments]');
 var extraPaymentInput = $('input[name=extra-payment]');
 var monthsToPayoffInput = $('input[name=months-to-payoff]');
 var debtOptions = $('#debt-options');
+var debtSnowball = $('#debt-snowball');
 
 // We should focus in on the descriptionInput so the user can start typing right away.
 descriptionInput.focus();
@@ -41,25 +42,52 @@ var Debt = function(description, apr, balance, payment) {
         var balance = this.balance;
         var overflow = 0;
 
-        if(this.balance === 0) {
-            
-        } else if(principle > this.balance) {
-
+        if(balance === 0) {
+            overflow += principle;
+            principle = 0;
+        } else if(principle > balance) {
+            overflow += (principle - balance);
+            principle = balance;
+            balance = 0;
         } else {
-
+            balance -= principle;
         }
 
-        if(this.id === findLowestDebt()) {
+        model.balance -= principle;
+        this.balance = balance;
 
+        if(isOverflow) {
+            this.register[this.register.length - 1].principle += principle;
+            this.register[this.register.length - 1].balance = balance;
+        } else {
+            this.register.push(new Payment(period, interest, principle, balance));
         }
+
+        return {payment: principle, overflow: overflow};
     }
 }
 
 // Finds the debt with the lowest balance and returns debt.id.
 function findLowestDebt() {
     var inTheRunning = model.debts.filter(function(debt) {
-        debt.balance > 0;
+        return debt.balance > 0;
     });
+
+    if(inTheRunning.length === 0) {
+        return -1;
+    } else if(inTheRunning.length === 1) {
+        return inTheRunning[0].id;
+    }else {
+        var target = inTheRunning[0];
+
+        for(var i = 1; i < inTheRunning.length - 1; i++) {
+            if(target.balance > inTheRunning[i].balance) {
+                target = inTheRunning[i];
+            }
+        }
+
+        return target.id;
+    }
 }
 
 // The payment object.
@@ -68,6 +96,21 @@ var Payment = function(period, interest, principle, balance) {
     this.interest = interest;
     this.principle = principle;
     this.balance = balance;
+}
+
+// render() creates the page!
+function render() {
+    snowballer();
+
+    var table = "<table><thead><tr>";
+
+    model.debts.forEach(function(debt) {
+        table += "<th>" + debt.description + "</th>";
+    });
+
+    table += "</tr></thead><tbody><tr>";
+
+    debtSnowball.append(table).removeAttr('hidden');
 }
 
 // The snowballer function creates the debt snowball and adds everything to the register.
@@ -82,7 +125,15 @@ function snowballer() {
         });
 
         while(overflow > 0) {
-            overflow -= debt.pay(overflow, true).principle;
+            var lowest = findLowestDebt();
+
+            model.debts.forEach(function(debt) {
+                if(lowest === -1) {
+                    overflow = 0;
+                } else if(debt.id === lowest) {
+                    overflow -= debt.pay(overflow, true).payment;
+                } 
+            });
         }
     }
 }
@@ -100,11 +151,11 @@ function addDebt(description, apr, balance, payment) {
 // Resets the model and debts back to their beginning state.
 function reset() {
     model.balance = 0;
-    model.extra = 0;
 
     model.debts.forEach(function(debt) {
         debt.balance = debt.register[0].balance;
         debt.register = [debt.register[0]];
+        model.balance += debt.balance;
     });
 }
 
@@ -136,7 +187,7 @@ $('#add-debt-form').submit(function(event) {
         balanceInput.val('');
         paymentInput.val('');
         debtOptions.removeAttr('hidden');
-        totalPaymentsInput.val(model.balance);
+        totalPaymentsInput.val((model.balance / 100).toFixed(2));
         extraPaymentInput.val(model.extra);
         monthsToPayoffInput.val(model.debts[0].register.length - 1);
     } else {
