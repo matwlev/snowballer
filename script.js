@@ -105,8 +105,8 @@ function render() {
 
     debtSnowball.empty();
 
-    totalPaymentsInput.val((model.payments / 100).toFixed(2));
-    extraPaymentInput.val((model.extra / 100).toFixed(2));
+    totalPaymentsInput.val(dollarBillz(model.payments));
+    extraPaymentInput.val(dollarBillz(model.extra));
     monthsToPayoffInput.val(model.debts[0].register.length - 1);
 
     var html = "<table><thead><tr>";
@@ -121,7 +121,7 @@ function render() {
         html += "<tr>";
 
         model.debts.forEach(function(debt) {
-            html += "<td><span class=\"payment\">" + ((debt.register[i].principle + debt.register[i].interest) / 100).toFixed(2) + "</span><span class=\"balance\">" + (debt.register[i].balance / 100).toFixed(2) + "</span></td>"; 
+            html += "<td><span class=\"payment\">" + dollarBillz(debt.register[i].principle + debt.register[i].interest) + "</span><span class=\"balance\">" + dollarBillz(debt.register[i].balance) + "</span></td>"; 
         });
 
         html += "</tr>";
@@ -157,16 +157,24 @@ function snowballer() {
     }
 }
 
+// Converts the given dollar amount into cents (int).
+function makesCents(amount) {
+    return Math.round(parseInt(amount * 100));
+}
+
+// Converts from cents to dollars (string).
+function dollarBillz(amount) {
+    return (amount / 100).toFixed(2);
+}
+
 // We need to add Debt objects to our model.
 function addDebt(description, apr, balance, payment) {
-    apr = Math.round(parseInt(apr * 100));
-    balance = Math.round(parseInt(balance * 100));
-    payment = Math.round(parseInt(payment * 100));
+    apr = makesCents(apr);
+    balance = makesCents(balance);
+    payment = makesCents(payment);
 
-    if(payment < (30 / 365) * this.apr * this.balance) {
-        // TODO: add 1% of balance to the interest to pay.
-        payment = Math.round(parseInt((30 / 365) * (apr / 10000) * (balance / 100) * 100));
-    }
+    // TODO: the payment should never be less that the amount of interest that is owed.
+    // If it is, the balance will keep going up and you'll be stuck in an infinite loop.
 
     model.balance += balance;
     model.payments += payment;
@@ -207,6 +215,11 @@ $('#add-debt-form').submit(function(event) {
         isNaN(balanceInput.val()) ||
         isNaN(paymentInput.val());
 
+        // TODO: User enters payment larger than balance.
+        // TODO: User enters payment smaller than interest.
+        // TODO: User enters APR > 100.
+        // TODO: Other input errors?
+
     if(!error) {
         addDebt(descriptionInput.val(), aprInput.val(), balanceInput.val(), paymentInput.val());
         descriptionInput.val('').focus();
@@ -232,3 +245,5 @@ extraPaymentInput.on('change', function(event) {
     model.extra = Math.round(parseInt(extraPaymentInput.val() * 100));
     render();
 });
+
+// TODO: When the user changes the months-to-payoff input, extra should change to an appropriate amount.
