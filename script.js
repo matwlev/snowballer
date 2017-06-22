@@ -18,6 +18,7 @@ descriptionInput.focus();
 // would give us some weird results and we may never reach zero.
 var model = {
     balance: 0, // The balance of all the debts combined
+    payments: 0, // The total of all of the debts payments
     extra: 0, // Any amount to be paid extra
     debts: [] // The debts being snowballed
 }
@@ -31,7 +32,7 @@ var Debt = function(description, apr, balance, payment) {
     this.register = [new Payment(0, 0, 0, balance)];
 
     this.interest = function() {
-        return parseInt(Math.round((30 / 365) * (this.apr / 10000) * (this.balance / 100) * 100));
+        return Math.round(parseInt((30 / 365) * (this.apr / 10000) * (this.balance / 100) * 100));
     }
 
     // Amount must be given in cents, not dollars.cents.
@@ -102,15 +103,33 @@ var Payment = function(period, interest, principle, balance) {
 function render() {
     snowballer();
 
-    var table = "<table><thead><tr>";
+    debtSnowball.empty();
+
+    totalPaymentsInput.val((model.payments / 100).toFixed(2));
+    extraPaymentInput.val((model.extra / 100).toFixed(2));
+    monthsToPayoffInput.val(model.debts[0].register.length - 1);
+
+    var html = "<table><thead><tr>";
 
     model.debts.forEach(function(debt) {
-        table += "<th>" + debt.description + "</th>";
+        html += "<th>" + debt.description + "</th>";
     });
 
-    table += "</tr></thead><tbody><tr>";
+    html += "</tr></thead><tbody>";
 
-    debtSnowball.append(table).removeAttr('hidden');
+    for(var i = 0; i < model.debts[0].register.length; i++) {
+        html += "<tr>";
+
+        model.debts.forEach(function(debt) {
+            html += "<td><span class=\"payment\">" + ((debt.register[i].principle + debt.register[i].interest) / 100).toFixed(2) + "</span><span class=\"balance\">" + (debt.register[i].balance / 100).toFixed(2) + "</span></td>"; 
+        });
+
+        html += "</tr>";
+    }
+
+    html += "</tbody></table>";
+
+    debtSnowball.append(html).removeAttr('hidden');
 }
 
 // The snowballer function creates the debt snowball and adds everything to the register.
@@ -140,22 +159,30 @@ function snowballer() {
 
 // We need to add Debt objects to our model.
 function addDebt(description, apr, balance, payment) {
-    apr = Math.round(parseFloat(apr * 100));
+    apr = Math.round(parseInt(apr * 100));
     balance = Math.round(parseInt(balance * 100));
     payment = Math.round(parseInt(payment * 100));
 
+    if(payment < (30 / 365) * this.apr * this.balance) {
+        // TODO: add 1% of balance to the interest to pay.
+        payment = Math.round(parseInt((30 / 365) * (apr / 10000) * (balance / 100) * 100));
+    }
+
     model.balance += balance;
+    model.payments += payment;
     model.debts.push(new Debt(description, apr, balance, payment));
 }
 
 // Resets the model and debts back to their beginning state.
 function reset() {
     model.balance = 0;
+    model.payments = 0;
 
     model.debts.forEach(function(debt) {
         debt.balance = debt.register[0].balance;
         debt.register = [debt.register[0]];
         model.balance += debt.balance;
+        model.payments += debt.payment;
     });
 }
 
@@ -187,10 +214,21 @@ $('#add-debt-form').submit(function(event) {
         balanceInput.val('');
         paymentInput.val('');
         debtOptions.removeAttr('hidden');
-        totalPaymentsInput.val((model.balance / 100).toFixed(2));
-        extraPaymentInput.val(model.extra);
-        monthsToPayoffInput.val(model.debts[0].register.length - 1);
+
+        render();
     } else {
         console.log("Invalid input error.");
     }
+});
+
+// When the user changes the value in total-balance.
+totalPaymentsInput.on('change', function(event) {
+    model.extra = Math.round(parseInt(totalPaymentsInput.val() * 100) - model.payments);
+    render();
+});
+
+// When the user changes the value in extra-payment.
+extraPaymentInput.on('change', function(event) {
+    model.extra = Math.round(parseInt(extraPaymentInput.val() * 100));
+    render();
 });
