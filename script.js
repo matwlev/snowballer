@@ -24,15 +24,17 @@ var model = {
 }
 
 // The Debt object describes a debt (credit card, loan, etc.) that the user adds.
-var Debt = function(description, apr, balance, payment) {
+var Debt = function(description, apr, balance, payment, daysInBillingCycle) {
     this.description = description;
     this.apr = apr;
     this.balance = balance;
     this.payment = payment;
+    this.minPayment = Math.round(this.balance * 0.01);
     this.register = [new Payment(0, 0, 0, balance)];
+    this.daysInBillingCycle = !daysInBillinCycle ? 30 : daysInBillingCycle;
 
     this.interest = function() {
-        return Math.round(parseInt((30 / 365) * (this.apr / 10000) * (this.balance / 100) * 100));
+        return Math.round(parseInt((this / 365) * (this.apr / 10000) * (this.balance / 100) * 100));
     }
 
     // Amount must be given in cents, not dollars.cents.
@@ -121,7 +123,7 @@ function render() {
         html += "<tr>";
 
         model.debts.forEach(function(debt) {
-            html += "<td><span class=\"payment\">" + dollarBillz(debt.register[i].principle + debt.register[i].interest) + "</span><span class=\"balance\">" + dollarBillz(debt.register[i].balance) + "</span></td>"; 
+            html += "<td><span class=\"payment\">" + dollarBillz(debt.register[i].principle) + "</span><span class=\"interest\">" + dollarBillz(debt.register[i].interest) + "</span><span class=\"balance\">" + dollarBillz(debt.register[i].balance) + "</span></td>"; 
         });
 
         html += "</tr>";
@@ -140,7 +142,8 @@ function snowballer() {
         var overflow = model.extra;
 
         model.debts.forEach(function(debt) {
-            overflow += debt.pay(debt.payment, false).overflow;
+            var amount = debt.payment > debt.minPayment ? debt.payment : debt.minPayment;
+            overflow += debt.pay(amount, false).overflow;
         });
 
         while(overflow > 0) {
@@ -172,9 +175,6 @@ function addDebt(description, apr, balance, payment) {
     apr = makesCents(apr);
     balance = makesCents(balance);
     payment = makesCents(payment);
-
-    // TODO: the payment should never be less that the amount of interest that is owed.
-    // If it is, the balance will keep going up and you'll be stuck in an infinite loop.
 
     model.balance += balance;
     model.payments += payment;
@@ -236,13 +236,13 @@ $('#add-debt-form').submit(function(event) {
 
 // When the user changes the value in total-balance.
 totalPaymentsInput.on('change', function(event) {
-    model.extra = Math.round(parseInt(totalPaymentsInput.val() * 100) - model.payments);
+    model.extra = makesCents(totalPaymentsInput.val()) - model.payments;
     render();
 });
 
 // When the user changes the value in extra-payment.
 extraPaymentInput.on('change', function(event) {
-    model.extra = Math.round(parseInt(extraPaymentInput.val() * 100));
+    model.extra = makesCents(extraPaymentInput.val());
     render();
 });
 
