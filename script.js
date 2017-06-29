@@ -36,8 +36,7 @@ var Debt = function(description, apr, balance, payment) {
         debugger;
         var period = this.register.length;
         var interest = !isOverflow ? makesCents((30 / 365) * (this.balance / 100) * this.apr) : 0;
-        var minPayment = makesCents((this.balance / 100) * .03);
-        var principle = amount > minPayment ? amount - interest : minPayment - interest;
+        var principle = amount - interest;
         var balance = this.balance;
         var overflow = 0;
 
@@ -168,9 +167,11 @@ function dollarBillz(amount) {
 
 // We need to add Debt objects to our model.
 function addDebt(description, apr, balance, payment) {
+    var minimum = (30 / 365) * balance * (apr / 100);
+    var tooLow = minimum > payment ? true : false;
     apr = parseFloat(apr / 100);
     balance = makesCents(balance);
-    payment = makesCents(payment);
+    payment = tooLow ? makesCents(Math.ceil((balance / 8400) + minimum)) : makesCents(payment);
 
     model.balance += balance;
     model.payments += payment;
