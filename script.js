@@ -24,24 +24,20 @@ var model = {
 }
 
 // The Debt object describes a debt (credit card, loan, etc.) that the user adds.
-var Debt = function(description, apr, balance, payment, daysInBillingCycle) {
+var Debt = function(description, apr, balance, payment) {
     this.description = description;
     this.apr = apr;
-    this.balance = balance;
-    this.payment = payment;
-    this.minPayment = Math.round(this.balance * 0.01);
+    this.balance = balance; // In cents
+    this.payment = payment; // in cents
     this.register = [new Payment(0, 0, 0, balance)];
-    this.daysInBillingCycle = !daysInBillinCycle ? 30 : daysInBillingCycle;
-
-    this.interest = function() {
-        return Math.round(parseInt((this / 365) * (this.apr / 10000) * (this.balance / 100) * 100));
-    }
 
     // Amount must be given in cents, not dollars.cents.
     this.pay = function(amount, isOverflow) {
+        debugger;
         var period = this.register.length;
-        var interest = !isOverflow ? this.interest() : 0;
-        var principle = amount - interest;
+        var interest = !isOverflow ? makesCents((30 / 365) * (this.balance / 100) * this.apr) : 0;
+        var minPayment = makesCents((this.balance / 100) * .03);
+        var principle = amount > minPayment ? amount - interest : minPayment - interest;
         var balance = this.balance;
         var overflow = 0;
 
@@ -142,7 +138,7 @@ function snowballer() {
         var overflow = model.extra;
 
         model.debts.forEach(function(debt) {
-            var amount = debt.payment > debt.minPayment ? debt.payment : debt.minPayment;
+            var amount = debt.payment;
             overflow += debt.pay(amount, false).overflow;
         });
 
@@ -172,7 +168,7 @@ function dollarBillz(amount) {
 
 // We need to add Debt objects to our model.
 function addDebt(description, apr, balance, payment) {
-    apr = makesCents(apr);
+    apr = parseFloat(apr / 100);
     balance = makesCents(balance);
     payment = makesCents(payment);
 
