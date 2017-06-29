@@ -33,7 +33,6 @@ var Debt = function(description, apr, balance, payment) {
 
     // Amount must be given in cents, not dollars.cents.
     this.pay = function(amount, isOverflow) {
-        debugger;
         var period = this.register.length;
         var interest = !isOverflow ? makesCents((30 / 365) * (this.balance / 100) * this.apr) : 0;
         var principle = amount - interest;
@@ -245,3 +244,17 @@ extraPaymentInput.on('change', function(event) {
 });
 
 // TODO: When the user changes the months-to-payoff input, extra should change to an appropriate amount.
+monthsToPayoffInput.on('change', function(event) {
+    model.extra = 0;
+    snowballer();
+    var target = parseInt(monthsToPayoffInput.val());
+    var extra = 0;
+
+    while(model.debts[0].register.length - 1 > target) {
+        model.extra = makesCents(extra);
+        snowballer();
+        extra++;
+    }
+
+    render();
+});
