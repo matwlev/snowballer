@@ -118,7 +118,7 @@ function render() {
         html += "<tr>";
 
         model.debts.forEach(function(debt) {
-            html += "<td><span class=\"payment\">" + dollarBillz(debt.register[i].principle) + "</span><span class=\"interest\">" + dollarBillz(debt.register[i].interest) + "</span><span class=\"balance\">" + dollarBillz(debt.register[i].balance) + "</span></td>"; 
+            html += "<td><span class=\"payment\">" + dollarBillz(debt.register[i].principle + debt.register[i].interest) + "</span><span class=\"balance\">" + dollarBillz(debt.register[i].balance) + "</span></td>"; 
         });
 
         html += "</tr>";
@@ -167,11 +167,12 @@ function dollarBillz(amount) {
 
 // We need to add Debt objects to our model.
 function addDebt(description, apr, balance, payment) {
-    var minimum = (30 / 365) * balance * (apr / 100);
+    var interest = (30 / 365) * balance * (apr / 100);
+    var minimum = balance / 84;
     var tooLow = minimum > payment ? true : false;
     apr = parseFloat(apr / 100);
     balance = makesCents(balance);
-    payment = tooLow ? makesCents(Math.ceil((balance / 8400) + minimum)) : makesCents(payment);
+    payment = tooLow ? makesCents(Math.ceil(minimum + interest)) : makesCents(payment);
 
     model.balance += balance;
     model.payments += payment;
