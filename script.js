@@ -6,9 +6,13 @@ var paymentInput = $('input[name=payment]');
 var totalPaymentsInput = $('input[name=total-payments]');
 var extraPaymentInput = $('input[name=extra-payment]');
 var monthsToPayoffInput = $('input[name=months-to-payoff]');
+var snowballerDiv = $('#snowballer');
 var debtOptions = $('#debt-options');
 var debtSnowball = $('#debt-snowball');
-var chart = $('#payoff-chart').get(0).getContext('2d'); // For the graph
+var addDebtAlert = $('#add-debt-alert');
+var clearDataBtn = $('#clear-debt-data');
+var chartCanvas = $('#payoff-chart');
+var chart = chartCanvas.get(0).getContext('2d'); // For the graph
 
 // We should focus in on the descriptionInput so the user can start typing right away.
 descriptionInput.focus();
@@ -136,7 +140,9 @@ function render() {
 
     html += "</tbody></table>";
 
-    debtSnowball.append(html).removeAttr('hidden');
+    addDebtAlert.attr('hidden', 'hidden');
+    debtSnowball.append(html);
+    snowballerDiv.removeAttr('hidden');
 
     var payoffChart = new Chart(chart, {
         type: 'line',
@@ -325,3 +331,13 @@ function createGraphDatasets() {
 
     return datasets;
 }
+
+// When the user clicks the button to clear the page, the page and all of the data is cleared.
+clearDataBtn.on('click', function(event) {
+    reset();
+    model.debts = [];
+    addDebtAlert.removeAttr('hidden');
+    debtSnowball.empty();
+    chartCanvas.empty();
+    snowballerDiv.attr('hidden', 'hidden');
+});

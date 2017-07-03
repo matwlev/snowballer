@@ -3,29 +3,61 @@
     <head>
         <title>Snowballer</title>
         <meta charset="utf-8">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="./style.css">
     </head>
 
     <body>
-        <form id="add-debt-form">
-            <input name="description" type="text" placeholder="Debt Description">
-            <input name="apr" type="text" placeholder="APR">
-            <input name="balance" type="text" placeholder="Current Balance">
-            <input name="payment" type="text" placeholder="Payment Amount">
-            <button type="submit">Add Debt!</button>
-        </form>
+        <div id="wrapper" class="container-fluid">
+            <form id="add-debt-form">
+                <div class="form-inline">
+                    <div class="form-group">
+                        <label class="sr-only" for="description">Debt Description</label>
+                        <input class="form-control" name="description" type="text" placeholder="Debt Description">
+                    </div>
 
-        <hr>
+                    <div class="form-group">
+                        <label class="sr-only" for="apr">APR</label>
+                        <div class="input-group">
+                            <input class="form-control" name="apr" type="text" placeholder="APR">
+                            <span class="input-group-addon">%</span>
+                        </div>
+                    </div>
 
-        <div id="debt-options" hidden="hidden">
-            <input name="total-payments" type="text">
-            <input name="extra-payment" type="text">
-            <input name="months-to-payoff" type="text">
+                    <div class="form-group">
+                        <label class="sr-only" for="balance">Balance</label>
+                        <div class="input-group">
+                            <span class="input-group-addon">$</span>
+                            <input class="form-control" name="balance" type="text" placeholder="Current Balance">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="sr-only" for="payment">Minimum Payment</label>
+                        <div class="input-group">
+                            <span class="input-group-addon">$</span>
+                            <input class="form-control" name="payment" type="text" placeholder="Minimum Payment">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" type="submit">Add Debt!</button>
+                </div>
+            </form>
+
+            <div id="add-debt-alert" class="alert alert-info" role="alert"><strong>Add some debts!</strong> Use to form above to add some debts to your snowball.</div>
+
+            <div id="snowballer" hidden="hidden">
+                <div id="debt-options">
+                    <input name="total-payments" type="text">
+                    <input name="extra-payment" type="text">
+                    <input name="months-to-payoff" type="text">
+                    <button id="clear-debt-data" class="btn btn-warning">Clear Data</button>
+                </div>
+
+                <div id="debt-snowball"></div>
+                <canvas id="payoff-chart" height="70"></canvas>
+            </div>
         </div>
-
-        <div id="debt-snowball" hidden="hidden"></div>
-
-        <canvas id="payoff-chart" height="70"></canvas>
 
         <script src="./jquery-3.2.1.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js"></script>
