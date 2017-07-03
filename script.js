@@ -8,6 +8,7 @@ var extraPaymentInput = $('input[name=extra-payment]');
 var monthsToPayoffInput = $('input[name=months-to-payoff]');
 var debtOptions = $('#debt-options');
 var debtSnowball = $('#debt-snowball');
+var chart = $('#payoff-chart').get(0).getContext('2d'); // For the graph
 
 // We should focus in on the descriptionInput so the user can start typing right away.
 descriptionInput.focus();
@@ -99,6 +100,16 @@ var Payment = function(period, interest, principle, balance) {
 function render() {
     snowballer();
 
+    // Get all of the arrays we're going to need to make the chart.
+    // The charts are made down lower.
+    model.debts.forEach(debt => debtLabels.push(debt.description));
+
+    for(var i = 0; i < model.debts[0].register.length; i++) {
+        var sum = 0;
+        model.debts.forEach(debt => sum += debt.register[i].balance);
+        debtDataset.push((sum / 100));
+    }
+
     debtSnowball.empty();
 
     totalPaymentsInput.val(dollarBillz(model.payments));
@@ -117,7 +128,7 @@ function render() {
         html += "<tr>";
 
         model.debts.forEach(function(debt) {
-            html += "<td><span class=\"payment\">" + dollarBillz(debt.register[i].principle + debt.register[i].interest) + "</span><span class=\"balance\">" + dollarBillz(debt.register[i].balance) + "</span></td>"; 
+            html += "<td><span class=\"payment\">" + dollarBillz(debt.register[i].principle + debt.register[i].interest) + "</span><span class=\"balance\">" + dollarBillz(debt.register[i].balance) + "</span></td>";
         });
 
         html += "</tr>";
@@ -126,11 +137,27 @@ function render() {
     html += "</tbody></table>";
 
     debtSnowball.append(html).removeAttr('hidden');
+
+    var payoffChart = new Chart(chart, {
+        type: 'line',
+        data: {
+            labels: createGraphLabels(),
+            datasets: createGraphDatasets(),
+        },
+        options: {
+            fill: false,
+            lineTension: 0
+        }
+    });
 }
 
 // The snowballer function creates the debt snowball and adds everything to the register.
 function snowballer() {
     reset(); // When we call snowballer, the model must be reset first.
+
+    model.debts.sort(function(a, b) {
+        return (a.balance / a.payment) - (b.balance / b.payment);
+    });
 
     while(model.balance > 0) {
         var overflow = model.extra;
@@ -148,7 +175,7 @@ function snowballer() {
                     overflow = 0;
                 } else if(debt.id === lowest) {
                     overflow -= debt.pay(overflow, true).payment;
-                } 
+                }
             });
         }
     }
@@ -182,6 +209,8 @@ function addDebt(description, apr, balance, payment) {
 function reset() {
     model.balance = 0;
     model.payments = 0;
+    debtLabels = [];
+    debtDataset = [];
 
     model.debts.forEach(function(debt) {
         debt.balance = debt.register[0].balance;
@@ -203,7 +232,7 @@ $('#add-debt-form').submit(function(event) {
         return false;
     }
 
-    var error = 
+    var error =
         isEmpty(descriptionInput.val()) ||
         isEmpty(aprInput.val()) ||
         isEmpty(balanceInput.val( )) ||
@@ -243,7 +272,7 @@ extraPaymentInput.on('change', function(event) {
     render();
 });
 
-// TODO: When the user changes the months-to-payoff input, extra should change to an appropriate amount.
+// When the user changes the months-to-payoff input, extra should change to an appropriate amount.
 monthsToPayoffInput.on('change', function(event) {
     model.extra = 0;
     snowballer();
@@ -258,3 +287,41 @@ monthsToPayoffInput.on('change', function(event) {
 
     render();
 });
+
+// Returns an array that contains all of the data labels for the graph.
+function createGraphLabels() {
+    var today = new Date();
+    var month = today.getMonth();
+    var year = today.getUTCFullYear();
+    var distance = model.debts[0].register.length;
+    var monthLabels = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    var labels = [monthLabels[month] + ", " + year];
+
+    for(var i = 0; i < distance; i++) {
+        month++;
+
+        if(month > 11) {
+            month = 0;
+            year++;
+        }
+
+        labels.push(monthLabels[month] + ", " + year);
+    }
+
+    return labels;
+}
+
+// Creates the datasets that are used to create the graph.
+function createGraphDatasets() {
+    var datasets = [];
+
+    model.debts.forEach(function(debt) {
+        var label = debt.description;
+        var data = [];
+        debt.register.forEach(e => data.push(dollarBillz(e.balance)));
+        datasets.push({label:label,data:data});
+    });
+
+    return datasets;
+}

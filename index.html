@@ -5,7 +5,7 @@
         <meta charset="utf-8">
         <link rel="stylesheet" type="text/css" href="./style.css">
     </head>
-    
+
     <body>
         <form id="add-debt-form">
             <input name="description" type="text" placeholder="Debt Description">
@@ -25,7 +25,10 @@
 
         <div id="debt-snowball" hidden="hidden"></div>
 
+        <canvas id="payoff-chart" height="70"></canvas>
+
         <script src="./jquery-3.2.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js"></script>
         <script src="./script.js"></script>
     </body>
 </html>
