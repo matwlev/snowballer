@@ -1,4 +1,5 @@
-// First, we should grab all of the inputs and other elements that we'll be using often.
+// First things first: let's grab all of the pieces of the page that we're going to be using. It's
+// probably better to just get this all out of the way now.
 var descriptionInput = $('input[name=description]');
 var aprInput = $('input[name=apr]');
 var balanceInput = $('input[name=balance]');
@@ -14,21 +15,22 @@ var clearDataBtn = $('#clear-debt-data');
 var chartCanvas = $('#payoff-chart');
 var chart = chartCanvas.get(0).getContext('2d'); // For the graph
 
-// We should focus in on the descriptionInput so the user can start typing right away.
+// When the page loads we want to user to be able to start typing right away. We can focus on the
+// debt description input to make it easier for everybody.
 descriptionInput.focus();
 
-// Now, we can describe the model that will be used to build the components on the page.
-// All values are in pennies, not dollars and cents.
-// If we used dollars and cents, we'd have to use floating point numbers and javascrit
-// would give us some weird results and we may never reach zero.
+// This is the model. Say "hello, model!" It's going to be used to store EVERYTHING about the page.
+// One thing to note: the balance, payments, and extra are all going to be stored as CENTS, note
+// dollars. The reason we're doing this is to avoid weird rounding errors when dealing with
+// floating point numbers. If we use cents, we can use integers and our lives will be easier.
 var model = {
-    balance: 0, // The balance of all the debts combined
-    payments: 0, // The total of all of the debts payments
-    extra: 0, // Any amount to be paid extra
-    debts: [] // The debts being snowballed
+    balance: 0, // The balance of all the debts combined.
+    payments: 0, // The total of all of the debts payments.
+    extra: 0, // Any amount to be paid extra.
+    debts: [] // An array holding debt objects for all of the debts the user inputs.
 }
 
-// The Debt object describes a debt (credit card, loan, etc.) that the user adds.
+// The debt object! These are input by the user and then added to the model's debts array.
 var Debt = function(description, apr, balance, payment) {
     this.description = description;
     this.apr = apr;
@@ -36,7 +38,7 @@ var Debt = function(description, apr, balance, payment) {
     this.payment = payment; // in cents
     this.register = [new Payment(0, 0, 0, balance)];
 
-    // Amount must be given in cents, not dollars.cents.
+    // All amounts must be given to the function in cents, not dollars and cents.
     this.pay = function(amount, isOverflow) {
         var period = this.register.length;
         var interest = !isOverflow ? makesCents((30 / 365) * (this.balance / 100) * this.apr) : 0;
@@ -44,6 +46,7 @@ var Debt = function(description, apr, balance, payment) {
         var balance = this.balance;
         var overflow = 0;
 
+        // This is our logic for making a payment. It's pretty self-explanitory. No surprises here.
         if(balance === 0) {
             overflow += principle;
             principle = 0;
@@ -58,6 +61,8 @@ var Debt = function(description, apr, balance, payment) {
         model.balance -= principle;
         this.balance = balance;
 
+        // If there is any amount that has overflowed, we need to update what we're adding to there
+        // debts register.
         if(isOverflow) {
             this.register[this.register.length - 1].principle += principle;
             this.register[this.register.length - 1].balance = balance;
@@ -65,11 +70,14 @@ var Debt = function(description, apr, balance, payment) {
             this.register.push(new Payment(period, interest, principle, balance));
         }
 
+        // We want to return an object with the amount paid and the amount overflowed because we'll
+        // need to use them when we snowball the debt.
         return {payment: principle, overflow: overflow};
     }
 }
 
-// Finds the debt with the lowest balance and returns debt.id.
+// Finds the debt with the lowest balance and returns it's id if once is found. If none of them are
+// the lowest, we return -1.
 function findLowestDebt() {
     var inTheRunning = model.debts.filter(function(debt) {
         return debt.balance > 0;
@@ -92,7 +100,7 @@ function findLowestDebt() {
     }
 }
 
-// The payment object.
+// The payment object that will be added to a debt's register when a payment is made.
 var Payment = function(period, interest, principle, balance) {
     this.period = period;
     this.interest = interest;
@@ -100,14 +108,15 @@ var Payment = function(period, interest, principle, balance) {
     this.balance = balance;
 }
 
-// render() creates the page!
+// This guy calls snowballer() then creates the entire page!
 function render() {
-    snowballer();
+    snowballer(); // Snowballer! Say, "thank you, snowballer()!"
 
-    // Get all of the arrays we're going to need to make the chart.
-    // The charts are made down lower.
+    // We need to make an array to hold the data we're going to use for the chart that chart.js is
+    // going to create. This one grabs all of the labels...
     model.debts.forEach(debt => debtLabels.push(debt.description));
 
+    // ...and this one grabs all of the data.
     for(var i = 0; i < model.debts[0].register.length; i++) {
         var sum = 0;
         model.debts.forEach(debt => sum += debt.register[i].balance);
@@ -159,12 +168,14 @@ function render() {
 
 // The snowballer function creates the debt snowball and adds everything to the register.
 function snowballer() {
-    reset(); // When we call snowballer, the model must be reset first.
+    reset(); // snowballer() has to work with a fresh version of the model.
 
+    // Sort the debts by shortest to longest payoff based on the payment and balance.
     model.debts.sort(function(a, b) {
         return (a.balance / a.payment) - (b.balance / b.payment);
     });
 
+    // This loop is what does the snowballing.
     while(model.balance > 0) {
         var overflow = model.extra;
 
@@ -192,7 +203,7 @@ function makesCents(amount) {
     return Math.round(parseInt(amount * 100));
 }
 
-// Converts from cents to dollars (string).
+// Converts from cents to dollars for display (string).
 function dollarBillz(amount) {
     return (amount / 100).toFixed(2);
 }
