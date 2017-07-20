@@ -143,7 +143,15 @@ function render() {
         html += "<tr>";
 
         model.debts.forEach(function(debt) {
-            html += "<td><span class=\"payment\">" + dollarBillz(debt.register[i].principle + debt.register[i].interest) + "</span><span class=\"balance\">" + dollarBillz(debt.register[i].balance) + "</span></td>";
+            html += "<span id=\"payment-group\">";
+            html += "<td><span class=\"balance";
+
+            if(debt.register[i].balance === 0) {
+                html += " zero-balance";
+            }
+
+            html +="\">$" + dollarBillz(debt.register[i].balance) + "</span></td>"
+            html += "</span>";
         });
 
         html += "</tr>";
@@ -258,11 +266,10 @@ $('#add-debt-form').submit(function(event) {
         isEmpty(paymentInput.val()) ||
         isNaN(aprInput.val()) ||
         isNaN(balanceInput.val()) ||
-        isNaN(paymentInput.val());
+        isNaN(paymentInput.val()) || 
+        aprInput.val() > 100 ||
+        paymentInput.val() > balanceInput.val();
 
-        // TODO: User enters payment larger than balance.
-        // TODO: User enters payment smaller than interest.
-        // TODO: User enters APR > 100.
         // TODO: Other input errors?
 
     if(!error) {
@@ -275,7 +282,7 @@ $('#add-debt-form').submit(function(event) {
 
         render();
     } else {
-        console.log("Invalid input error.");
+        addDebtAlert.removeClass('alert-info').addClass('alert-danger').html("<strong>Uh oh!</strong> Something went wrong!<br>Perhaps you forgot to fill in a field or you entered an invalid number?");
     }
 });
 
@@ -350,6 +357,7 @@ clearDataBtn.on('click', function(event) {
     reset();
     model.debts = [];
     addDebtAlert.removeAttr('hidden');
+    addDebtAlert.removeClass('alert-danger').addClass('alert-info').html("<strong>Add some debts!</strong> Use to form above to add some debts to your snowball.");
     debtSnowball.empty();
     chartCanvas.empty();
     snowballerDiv.attr('hidden', 'hidden');

@@ -8,11 +8,11 @@
     </head>
 
     <body>
-        <div id="wrapper" class="container">
-            <header class="page-header">
-                <h1>Snowballer</h1>
-            </header>
+        <header class="jumbotron" style="text-align:center;text-transform:uppercase;font-weight:700;">
+            <h1>Snowballer</h1>
+        </header>
 
+        <div id="wrapper" class="container">
             <main>
                 <div class="row">
                     <form id="add-debt-form">
@@ -98,8 +98,10 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-3" style="text-align:right;">
-                                        <button id="clear-debt-data" class="btn btn-danger" style="width:100%">Clear Data</button>
+                                    <div class="col-md-1"></div>
+
+                                    <div class="col-md-2" style="text-align:right;">
+                                        <button id="clear-debt-data" class="btn btn-danger" style="width:100%">Clear</button>
                                     </div>
                                 </div>
                             </div>
@@ -116,6 +118,12 @@
                 </div>
             </main>
         </div>
+
+        <footer class="snowballer-footer footer">
+            <div class="container">
+                <p>&copy;2017 Matthew Levek</p>
+            </div>
+        </footer>
 
         <script src="./jquery-3.2.1.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js"></script>
