@@ -8,80 +8,111 @@
     </head>
 
     <body>
-        <div id="wrapper" class="container-fluid">
+        <div id="wrapper" class="container">
             <header class="page-header">
                 <h1>Snowballer</h1>
             </header>
 
             <main>
-                <form id="add-debt-form">
-                    <div class="form">
-                        <div class="form-group">
-                            <label class="sr-only" for="description">Debt Description</label>
-                            <input class="form-control" name="description" type="text" placeholder="Debt Description">
-                        </div>
+                <div class="row">
+                    <form id="add-debt-form">
+                        <div class="form form-inline">
+                            <div class="form-group col-md-3">
+                                <label class="sr-only" for="description">Debt Description</label>
+                                <input class="form-control" name="description" type="text" placeholder="Debt Description" style="width:100%;">
+                            </div>
 
-                        <div class="form-group">
-                            <label class="sr-only" for="apr">APR</label>
-                            <div class="input-group">
-                                <input class="form-control" name="apr" type="text" placeholder="APR">
-                                <span class="input-group-addon">%</span>
+                            <div class="form-group col-md-2">
+                                <label class="sr-only" for="apr">APR</label>
+                                <div class="input-group">
+                                    <input class="form-control" name="apr" type="text" placeholder="APR" style="text-align:right;">
+                                    <span class="input-group-addon">%</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group col-md-3">
+                                <label class="sr-only" for="balance">Balance</label>
+                                <div class="input-group" style="width:100%;">
+                                    <span class="input-group-addon">$</span>
+                                    <input class="form-control" name="balance" type="text" placeholder="Current Balance" style="width:100%;">
+                                </div>
+                            </div>
+
+                            <div class="form-group col-md-2">
+                                <label class="sr-only" for="payment">Minimum Payment</label>
+                                <div class="input-group">
+                                    <span class="input-group-addon">$</span>
+                                    <input class="form-control" name="payment" type="text" placeholder="Min. Payment">
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <button class="btn btn-primary" type="submit" style="width:100%;">Add Debt!</button>
                             </div>
                         </div>
+                    </form>
+                </div>
 
-                        <div class="form-group">
-                            <label class="sr-only" for="balance">Balance</label>
-                            <div class="input-group">
-                                <span class="input-group-addon">$</span>
-                                <input class="form-control" name="balance" type="text" placeholder="Current Balance">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="sr-only" for="payment">Minimum Payment</label>
-                            <div class="input-group">
-                                <span class="input-group-addon">$</span>
-                                <input class="form-control" name="payment" type="text" placeholder="Minimum Payment">
-                            </div>
-                        </div>
-
-                        <button class="btn btn-primary" type="submit">Add Debt!</button>
-                    </div>
-                </form>
+                <hr>
 
                 <div id="add-debt-alert" class="alert alert-info" role="alert"><strong>Add some debts!</strong> Use to form above to add some debts to your snowball.</div>
 
                 <div id="snowballer" hidden="hidden">
-                    <div id="debt-options" class="form">
-                        <div class="form-group">
-                            <label for="total-payments">Payment Total</label>
-                            <div class="input-group">
-                                <span class="input-group-addon">$</span>
-                                <input class="form-control" name="total-payments" type="text">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" style="text-align:right;">
+                            <div id="change-view-btns" class="btn-group">
+                                <button id="table-view-btn" type="button" class="btn btn-primary">
+                                    <span class="glyphicon glyphicon-th"></span>
+                                </button>
+
+                                <button id="graph-view-btn" type="button" class="btn btn-default">
+                                    <span class="glyphicon glyphicon-stats"></span>
+                                </button>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="total-payments">Extra Payment</label>
-                            <div class="input-group">
-                                <span class="input-group-addon">$</span>
-                                <input class="form-control" name="extra-payment" type="text">
+                        <div class="panel-body">
+                            <div id="snowballer-info" class="row">
+                                <div id="debt-options" class="form form-inline">
+                                    <div class="form-group col-md-3">
+                                        <label class="sr-only" for="total-payments">Payment Total</label>
+                                        <div class="input-group">
+                                            <span class="input-group-addon">Total Payments</span>
+                                            <input class="form-control" name="total-payments" type="text">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group col-md-3">
+                                        <label class="sr-only" for="total-payments">Extra Payment</label>
+                                        <div class="input-group">
+                                            <span class="input-group-addon">Extra Payment</span>
+                                            <input class="form-control" name="extra-payment" type="text">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group col-md-3">
+                                        <label class="sr-only" for="total-payments">Months to Payoff</label>
+                                        <div class="input-group">
+                                            <input class="form-control" name="months-to-payoff" type="text" style="text-align:right;">
+                                            <span class="input-group-addon">Months to Payoff</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3" style="text-align:right;">
+                                        <button id="clear-debt-data" class="btn btn-danger" style="width:100%">Clear Data</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div id="debt-snowball"></div>
+
+                            <div id="payoff-chart-canvas-wrapper" hidden="hidden">
+                                <canvas id="payoff-chart"></canvas>
                             </div>
                         </div>
-
-                        <div class="form-group">
-                            <label for="total-payments">Months to Payoff</label>
-                            <div class="input-group">
-                                <input class="form-control" name="months-to-payoff" type="text">
-                                <span class="input-group-addon">months</span>
-                            </div>
-                        </div>
-
-                        <button id="clear-debt-data" class="btn btn-warning">Clear Data</button>
                     </div>
-
-                    <div id="debt-snowball"></div>
-                    <canvas id="payoff-chart" height="70"></canvas>
                 </div>
             </main>
         </div>

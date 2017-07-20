@@ -13,6 +13,8 @@ var debtSnowball = $('#debt-snowball');
 var addDebtAlert = $('#add-debt-alert');
 var clearDataBtn = $('#clear-debt-data');
 var chartCanvas = $('#payoff-chart');
+var tableViewBtn = $('#table-view-btn');
+var graphViewBtn = $('#graph-view-btn');
 var chart = chartCanvas.get(0).getContext('2d'); // For the graph
 
 // When the page loads we want to user to be able to start typing right away. We can focus on the
@@ -129,7 +131,7 @@ function render() {
     extraPaymentInput.val(dollarBillz(model.extra));
     monthsToPayoffInput.val(model.debts[0].register.length - 1);
 
-    var html = "<table><thead><tr>";
+    var html = "<table class=\"table table-striped\"><thead><tr>";
 
     model.debts.forEach(function(debt) {
         html += "<th>" + debt.description + "</th>";
@@ -352,3 +354,21 @@ clearDataBtn.on('click', function(event) {
     chartCanvas.empty();
     snowballerDiv.attr('hidden', 'hidden');
 });
+
+// When the user wants to switch from graph view to table view or vice-versa.
+tableViewBtn.on('click', function(event) {
+    graphViewBtn.removeClass('btn-primary').addClass('btn-default');
+    tableViewBtn.removeClass('btn-default').addClass('btn-primary');
+
+    $('#payoff-chart-canvas-wrapper').attr('hidden', 'hidden');
+    $('#debt-snowball').removeAttr('hidden');
+});
+
+graphViewBtn.on('click', function(event) {
+    tableViewBtn.removeClass('btn-primary').addClass('btn-default');
+    graphViewBtn.removeClass('btn-default').addClass('btn-primary');
+
+    $('#payoff-chart-canvas-wrapper').removeAttr('hidden');
+    $('#debt-snowball').attr('hidden', 'hidden');
+});
+
