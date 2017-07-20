@@ -131,7 +131,8 @@ function render() {
     extraPaymentInput.val(dollarBillz(model.extra));
     monthsToPayoffInput.val(model.debts[0].register.length - 1);
 
-    var html = "<table class=\"table table-striped\"><thead><tr>";
+    // Build the table for just the balances.
+    var html = "<table id=\"balance-table\" class=\"table table-striped\"><thead><tr><th>Period</th>";
 
     model.debts.forEach(function(debt) {
         html += "<th>" + debt.description + "</th>";
@@ -140,7 +141,7 @@ function render() {
     html += "</tr></thead><tbody>";
 
     for(var i = 0; i < model.debts[0].register.length; i++) {
-        html += "<tr>";
+        html += "<tr><td>" + i + "</td>";
 
         model.debts.forEach(function(debt) {
             html += "<span id=\"payment-group\">";
@@ -157,10 +158,43 @@ function render() {
         html += "</tr>";
     }
 
-    html += "</tbody></table>";
+    html += "</tbody></table>"; // End of table
+
+    // // Build a table for just the payments.
+    // html2 += "</tbody></table>";
+
+    // var html2 = "<table id=\"payment-table\" class=\"table table-striped\" hidden=\"hidden\"><thead><tr><th>Period</th>";
+
+    // model.debts.forEach(function(debt) {
+    //     html2 += "<th>" + debt.description + "</th>";
+    // });
+
+    // html2 += "</tr></thead><tbody>";
+
+    // for(var i = 0; i < model.debts[0].register.length; i++) {
+    //     html2 += "<tr><td>" + i + "</td>";
+
+    //     model.debts.forEach(function(debt) {
+    //         html2 += "<span id=\"payment-group\">";
+    //         html2 += "<td><span class=\"balance";
+
+    //         if(debt.register[i].balance === 0) {
+    //             html2 += " zero-balance";
+    //         }
+
+    //         html2 +="\">$" + dollarBillz(debt.register[i].balance) + "</span></td>"
+    //         html2 += "</span>";
+    //     });
+
+    //     html2 += "</tr>";
+    // }
+
+    // html2 += "</tbody></table>"; // End of table
+
 
     addDebtAlert.attr('hidden', 'hidden');
     debtSnowball.append(html);
+    // debtSnowball.append(html2);
     snowballerDiv.removeAttr('hidden');
 
     var payoffChart = new Chart(chart, {
@@ -268,7 +302,7 @@ $('#add-debt-form').submit(function(event) {
         isNaN(balanceInput.val()) ||
         isNaN(paymentInput.val()) || 
         aprInput.val() > 100 ||
-        paymentInput.val() > balanceInput.val();
+        aprInput.val() < 0;
 
         // TODO: Other input errors?
 
@@ -279,10 +313,30 @@ $('#add-debt-form').submit(function(event) {
         balanceInput.val('');
         paymentInput.val('');
         debtOptions.removeAttr('hidden');
+        $('#description-group').removeClass('has-error');
+        $('#apr-group').removeClass('has-error');
+        $('#payment-group').removeClass('has-error');
+        $('#balance-group').removeClass('has-error');
 
         render();
     } else {
-        addDebtAlert.removeClass('alert-info').addClass('alert-danger').html("<strong>Uh oh!</strong> Something went wrong!<br>Perhaps you forgot to fill in a field or you entered an invalid number?");
+        addDebtAlert.removeClass('alert-info').addClass('alert-danger').html("<strong>Uh oh!</strong> Something went wrong!");
+
+        if(isEmpty(descriptionInput.val())) {
+            $('#description-group').addClass('has-error');
+        }
+
+        if(isEmpty(aprInput.val()) || isNaN(aprInput.val()) || aprInput.val() > 100 || aprInput.val() < 0) {
+            $('#apr-group').addClass('has-error');
+        }
+
+        if(isEmpty(paymentInput.val()) || isNaN(paymentInput.val())) {
+            $('#payment-group').addClass('has-error');
+        }
+
+        if(isEmpty(balanceInput.val()) || isNaN(balanceInput.val())) {
+            $('#balance-group').addClass('has-error');
+        }
     }
 });
 
@@ -368,6 +422,7 @@ tableViewBtn.on('click', function(event) {
     graphViewBtn.removeClass('btn-primary').addClass('btn-default');
     tableViewBtn.removeClass('btn-default').addClass('btn-primary');
 
+    $('#balance-payment-btns').attr('hidden', 'hidden');
     $('#payoff-chart-canvas-wrapper').attr('hidden', 'hidden');
     $('#debt-snowball').removeAttr('hidden');
 });
@@ -376,7 +431,7 @@ graphViewBtn.on('click', function(event) {
     tableViewBtn.removeClass('btn-primary').addClass('btn-default');
     graphViewBtn.removeClass('btn-default').addClass('btn-primary');
 
+    $('#balance-payment-btns').removeAttr('hidden');
     $('#payoff-chart-canvas-wrapper').removeAttr('hidden');
     $('#debt-snowball').attr('hidden', 'hidden');
 });
-

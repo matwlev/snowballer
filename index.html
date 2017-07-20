@@ -3,13 +3,16 @@
     <head>
         <title>Snowballer</title>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://fonts.googleapis.com/css?family=Pacifico" rel="stylesheet">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="./style.css">
     </head>
 
     <body>
-        <header class="jumbotron" style="text-align:center;text-transform:uppercase;font-weight:700;">
+        <header id="masthead" class="jumbotron" style="text-align:center;font-weight:700;">
             <h1>Snowballer</h1>
+            <p id="masthead-description">A simple debt snowball calculator based on Dave Ramsey's debt snowball method for paying off debt.<p>
         </header>
 
         <div id="wrapper" class="container">
@@ -17,12 +20,12 @@
                 <div class="row">
                     <form id="add-debt-form">
                         <div class="form form-inline">
-                            <div class="form-group col-md-3">
+                            <div id="description-group" class="form-group col-md-3">
                                 <label class="sr-only" for="description">Debt Description</label>
                                 <input class="form-control" name="description" type="text" placeholder="Debt Description" style="width:100%;">
                             </div>
 
-                            <div class="form-group col-md-2">
+                            <div id="apr-group" class="form-group col-md-2">
                                 <label class="sr-only" for="apr">APR</label>
                                 <div class="input-group">
                                     <input class="form-control" name="apr" type="text" placeholder="APR" style="text-align:right;">
@@ -30,7 +33,7 @@
                                 </div>
                             </div>
 
-                            <div class="form-group col-md-3">
+                            <div id="balance-group" class="form-group col-md-3">
                                 <label class="sr-only" for="balance">Balance</label>
                                 <div class="input-group" style="width:100%;">
                                     <span class="input-group-addon">$</span>
@@ -38,7 +41,7 @@
                                 </div>
                             </div>
 
-                            <div class="form-group col-md-2">
+                            <div id="payment-group" class="form-group col-md-2">
                                 <label class="sr-only" for="payment">Minimum Payment</label>
                                 <div class="input-group">
                                     <span class="input-group-addon">$</span>
