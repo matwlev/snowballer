@@ -9,6 +9,6 @@ The tools used in this project are:
 - jQuery (3.2.1)
 - Google Fonts API
 
-To view the final project, click on [this link](https://spooality.github.io/snowballer/).
+To view the final project, click on [this link](https://matwlev.github.io/snowballer/).
 
 For more details on Launchcode, visit [https://www.launchcode.org](https://www.launchcode.org).
